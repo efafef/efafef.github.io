@@ -26,13 +26,6 @@ scene.add(cubeGreen);
 
 camera.position.z = 5;
 
-let greenCubeMass = 100;
-let groundMomentum = 1;
-let greenCubeVelocity = 0;
-let gravitationalConstant = -0.001;
-let greenCubedragCoefficient = 1.05;
-let airDensity = 3;
-
 function animate() {
 
     cubeGreen.position.y += greenCubeVelocity;
