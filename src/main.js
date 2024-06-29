@@ -34,15 +34,15 @@ camera.position.z = 5;
 
 function animate() {
 
-	plane.torque(new Vector(0, 0, -0.01), new Vector(1, 0, 0));
+	plane.applyTorque(new Vector(0, 0, 1), new Vector(0, 0, 1));
 	plane.move();
 
 	cube.position.x = plane.position.x;
 	cube.position.y = plane.position.y;
 	cube.position.z = plane.position.z;
-	cube.rotation.x = plane.xangle;
-	cube.rotation.y = plane.yangle;
-	cube.rotation.z = plane.zangle;
+	cube.rotation.x = plane.anglePosition.x;
+	cube.rotation.y = plane.anglePosition.y;
+	cube.rotation.z = plane.anglePosition.z;
 
 	camera.position.x = cube.position.x;
 	camera.position.y = cube.position.y;

@@ -2,11 +2,9 @@ class Plane {
 	constructor() {
 		this.velocity = new Vector(0, 0, 0);
         this.position = new Vector(0, 0, 0);
-		this.xangle = 0;
-		this.yangle = 0;
-        this.zangle = 0;
+        this.anglePosition = new Vector(0, 0, 0);
         this.angleVelocity = new Vector(0, 0, 0);
-        this.mass = 1000;
+        this.mass = 1000000;
 	}
 
 	move() {
@@ -54,30 +52,31 @@ class Plane {
 
 		//change pos
 
-        this.xangle += this.angleVelocity.x;
-        this.yangle += this.angleVelocity.y;
-        this.zangle += this.angleVelocity.z;
-		this.position.add(this.velocity);
+        this.anglePosition = this.anglePosition.add(this.angleVelocity);
+		this.position = this.position.add(this.velocity);
 	}
 
     //TODO: fix, account for 0 rotation
-    torque(force, location) {
-        location.subtract(this.position);
-        let parallelForce = location.scale(location.dot(force) / location.dot(location));
-        let perpendicularForce = force;
-        perpendicularForce.subtract(parallelForce);
-        let angleAcceleration = parallelForce.divide(location.scale(this.mass));
+    applyTorque(force, location) {
+        let relativeLocation = location.subtract(this.position);
+
+        let perpendicularForce = relativeLocation.scale(relativeLocation.dot(force) / relativeLocation.dot(relativeLocation));
+        let parallelForce = force.subtract(perpendicularForce);
+
+        let positionAcceleration = perpendicularForce.scale(1/this.mass);
+        let angleAcceleration = relativeLocation.cross(parallelForce).scale(3/this.mass*relativeLocation.dot(relativeLocation));
+
+        console.log(angleAcceleration);
 
         angleAcceleration.x = isNaN(angleAcceleration.x) ? 0 : angleAcceleration.x;
         angleAcceleration.y = isNaN(angleAcceleration.y) ? 0 : angleAcceleration.y;
         angleAcceleration.z = isNaN(angleAcceleration.z) ? 0 : angleAcceleration.z;
 
-        this.angleVelocity.add(angleAcceleration);
-        this.velocity.add(perpendicularForce);
+        this.angleVelocity = this.angleVelocity.add(angleAcceleration);
+        this.velocity = this.velocity.add(positionAcceleration);
     }
 }
 
-//TODO: make all vector function return a new vector and not change the old one
 class Vector {
 	constructor(x, y, z) {
 		this.x = x;
@@ -90,17 +89,19 @@ class Vector {
 	}
 
     multiply(vector) {
-        this.x *= vector.x;
-        this.y *= vector.y;
-        this.z *= vector.z;
-        return this;
+        let result = new Vector(0, 0, 0); 
+		result.x = this.x * vector.x;
+		result.y = this.y * vector.y;
+		result.z = this.z * vector.z;
+        return result;
     }
 
     divide(vector) {
-        this.x /= vector.x;
-        this.y /= vector.y;
-        this.z /= vector.z;
-        return this;
+        let result = new Vector(0, 0, 0); 
+		result.x = this.x / vector.x;
+		result.y = this.y / vector.y;
+		result.z = this.z / vector.z;
+        return result;
     }
 
 	rotate(xangle, yangle, zangle) {
@@ -149,24 +150,27 @@ class Vector {
     }
 
 	add(vector) {
-		this.x += vector.x;
-		this.y += vector.y;
-		this.z += vector.z;
-        return this;
+		let result = new Vector(0, 0, 0); 
+		result.x = this.x + vector.x;
+		result.y = this.y + vector.y;
+		result.z = this.z + vector.z;
+        return result;
 	}
 
     subtract(vector) {
-		this.x -= vector.x;
-		this.y -= vector.y;
-		this.z -= vector.z;
-        return this;
+		let result = new Vector(0, 0, 0); 
+		result.x = this.x - vector.x;
+		result.y = this.y - vector.y;
+		result.z = this.z - vector.z;
+        return result;
 	}
 
 	scale(num) {
-		this.x *= num;
-		this.y *= num;
-		this.z *= num;
-        return this;
+        let result = new Vector(0, 0, 0); 
+		result.x = this.x * num;
+		result.y = this.y * num;
+		result.z = this.z * num;
+        return result;
 	}
 
 	dot(vector) {
@@ -182,13 +186,12 @@ class Vector {
 	}
 
     normalize() {
+        let result = new Vector(0, 0, 0);
         let magnitude = this.magnitude();
         if (magnitude !== 0) {
-            this.x /= magnitude;
-            this.y /= magnitude;
-            this.z /= magnitude;
+            result = result.scale(1/magnitude);
         }
-        return this;
+        return result;
     }
 }
 
